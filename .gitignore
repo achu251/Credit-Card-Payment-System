@@ -24,3 +24,6 @@ Thumbs.db
 
 # Local exported data
 **/transactions.csv
+
+# Database dumps
+Database/*.sql
