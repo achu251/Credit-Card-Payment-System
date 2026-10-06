@@ -1,0 +1,40 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<h1>Daily Payment Summary</h1>
+
+<form method="get" style="margin-bottom: 30px;">
+    <label for="date"><strong>Select Date:</strong></label>
+    <input type="date" id="date" name="date" value="{{ selected_date|date:"Y-m-d" }}">
+    <button type="submit" class="button">View Summary</button>
+</form>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; max-width: 1000px;">
+
+    <div style="background: #ffffff; border: 1px solid #ddd; padding: 25px; border-radius: 8px;">
+        <h2>Total Payments</h2>
+        <p style="font-size: 32px; font-weight: bold;">{{ total_payments }}</p>
+    </div>
+
+    <div style="background: #ffffff; border: 1px solid #ddd; padding: 25px; border-radius: 8px;">
+        <h2>Successful Payments</h2>
+        <p style="font-size: 32px; font-weight: bold;">{{ successful_payments }}</p>
+    </div>
+
+    <div style="background: #ffffff; border: 1px solid #ddd; padding: 25px; border-radius: 8px;">
+        <h2>Failed Payments</h2>
+        <p style="font-size: 32px; font-weight: bold;">{{ failed_payments }}</p>
+    </div>
+
+    <div style="background: #ffffff; border: 1px solid #ddd; padding: 25px; border-radius: 8px;">
+        <h2>Pending Payments</h2>
+        <p style="font-size: 32px; font-weight: bold;">{{ pending_payments }}</p>
+    </div>
+
+    <div style="background: #ffffff; border: 1px solid #ddd; padding: 25px; border-radius: 8px;">
+        <h2>Total Successful Amount</h2>
+        <p style="font-size: 32px; font-weight: bold;">₹{{ total_successful_amount }}</p>
+    </div>
+
+</div>
+{% endblock %}

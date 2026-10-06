@@ -1,0 +1,26 @@
+# Environment files
+**/.env
+**/.env.*
+!**/.env.example
+
+# Python
+**/venv/
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+**/.coverage
+**/test_*.db
+
+# Node
+**/node_modules/
+**/dist/
+**/*.log
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local exported data
+**/transactions.csv
