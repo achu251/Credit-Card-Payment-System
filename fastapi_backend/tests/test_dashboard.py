@@ -28,7 +28,8 @@ TestingSessionLocal = sessionmaker(
 
 
 class TestUser(Base):
-    __tablename__ = "dashboard_test_users"
+    __tablename__ = "users_user"
+    __table_args__ = {"extend_existing": True}
 
     id = Column(Integer, primary_key=True)
     username = Column(String(150), nullable=False)
