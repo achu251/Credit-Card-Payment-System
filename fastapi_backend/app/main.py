@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers.payments import router as payment_router
+from app.routers.dashboard import router as dashboard_router
 
 
 app = FastAPI(
@@ -23,6 +24,7 @@ app.add_middleware(
 
 
 app.include_router(payment_router)
+app.include_router(dashboard_router)
 
 
 @app.get("/")
