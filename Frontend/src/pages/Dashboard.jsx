@@ -1,7 +1,49 @@
+import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
+
+const API_BASE_URL = "http://127.0.0.1:8001"
 
 function Dashboard() {
   const navigate = useNavigate()
+  const [summary, setSummary] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    const loadDashboard = async () => {
+      const token = localStorage.getItem("access_token")
+      if (!token) {
+        navigate("/login")
+        return
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/dashboard/summary`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const data = await response.json()
+
+        if (response.status === 401) {
+          localStorage.removeItem("access_token")
+          localStorage.removeItem("refresh_token")
+          navigate("/login")
+          return
+        }
+
+        if (!response.ok) {
+          throw new Error(data.detail || "Failed to load dashboard summary.")
+        }
+
+        setSummary(data)
+      } catch (err) {
+        setError(err.message || "Unable to load dashboard summary.")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadDashboard()
+  }, [navigate])
 
   const handleLogout = () => {
     localStorage.removeItem("access_token")
@@ -9,87 +51,143 @@ function Dashboard() {
     navigate("/login")
   }
 
+  const formatAmount = (amount) => {
+    const value = Number(amount)
+    return Number.isNaN(value) ? "0.00" : value.toFixed(2)
+  }
+
+  const formatDate = (value) => {
+    const date = new Date(value)
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleString()
+  }
+
+  const statusClass = (status) =>
+    status === "SUCCESS"
+      ? "bg-green-100 text-green-700"
+      : status === "FAILED"
+        ? "bg-red-100 text-red-700"
+        : "bg-yellow-100 text-yellow-700"
+
+  const statusLabel = (status) =>
+    status === "SUCCESS" ? "Success" : status === "FAILED" ? "Failed" : "Pending"
+
+  const stats = summary
+    ? [
+        ["Total Spent", `₹${formatAmount(summary.total_amount_spent)}`, "💰"],
+        ["Available Credit", `₹${formatAmount(summary.available_credit_limit)}`, "💳"],
+        ["Total Transactions", summary.total_transactions, "📊"],
+        ["This Month", `₹${formatAmount(summary.current_month_spending)}`, "📅"],
+      ]
+    : []
+
   return (
     <div className="min-h-screen bg-slate-100">
-
       <nav className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-
-          <h1 className="text-2xl font-bold text-blue-600">
-            CreditPay
-          </h1>
-
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg font-medium"
-          >
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-blue-600">CreditPay</h1>
+          <button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg font-medium">
             Logout
           </button>
-
         </div>
       </nav>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
-
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-slate-800">
-            Dashboard
-          </h2>
-
-          <p className="text-gray-500 mt-2">
-            Manage your cards and payments from one place.
-          </p>
+          <h2 className="text-3xl font-bold text-slate-800">Dashboard</h2>
+          <p className="text-gray-500 mt-2">Quick overview of your credit card usage and recent activity.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            {error}
+          </div>
+        )}
 
-          <Link
-            to="/cards"
-            className="bg-white rounded-2xl shadow p-6 hover:shadow-lg transition"
-          >
-            <div className="text-3xl mb-4">💳</div>
+        {loading ? (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {[1, 2, 3, 4].map((item) => (
+                <div key={item} className="bg-white rounded-2xl shadow p-6 animate-pulse">
+                  <div className="h-10 w-10 bg-slate-200 rounded-lg mb-5" />
+                  <div className="h-4 bg-slate-200 rounded w-32 mb-3" />
+                  <div className="h-8 bg-slate-200 rounded w-24" />
+                </div>
+              ))}
+            </div>
+            <div className="bg-white rounded-2xl shadow p-6 animate-pulse space-y-4">
+              <div className="h-6 bg-slate-200 rounded w-48" />
+              {[1,2,3,4,5].map((item) => <div key={item} className="h-12 bg-slate-100 rounded" />)}
+            </div>
+          </>
+        ) : summary ? (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {stats.map(([label, value, icon]) => (
+                <div key={label} className="bg-white rounded-2xl shadow p-6">
+                  <div className="text-3xl mb-4">{icon}</div>
+                  <p className="text-sm font-medium text-gray-500">{label}</p>
+                  <p className="text-2xl font-bold text-slate-800 mt-2">{value}</p>
+                </div>
+              ))}
+            </div>
 
-            <h3 className="text-xl font-bold text-slate-800">
-              My Cards
-            </h3>
+            <div className="bg-white rounded-2xl shadow overflow-hidden">
+              <div className="px-6 py-5 border-b flex justify-between items-center">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-800">Last 5 Transactions</h3>
+                  <p className="text-sm text-gray-500 mt-1">Your most recent payment activity.</p>
+                </div>
+                <Link to="/transactions" className="text-blue-600 font-semibold text-sm">View All</Link>
+              </div>
 
-            <p className="text-gray-500 mt-2">
-              Add and manage your saved cards.
-            </p>
-          </Link>
+              {summary.last_5_transactions.length === 0 ? (
+                <div className="p-10 text-center text-gray-500">No transactions yet.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-slate-50 border-b">
+                      <tr>
+                        <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Amount</th>
+                        <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Card</th>
+                        <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Status</th>
+                        <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {summary.last_5_transactions.map((transaction, index) => (
+                        <tr key={`${transaction.date}-${index}`} className="border-b last:border-b-0 hover:bg-slate-50">
+                          <td className="px-6 py-4 font-semibold">₹{formatAmount(transaction.amount)}</td>
+                          <td className="px-6 py-4 font-mono text-sm">{transaction.masked_card}</td>
+                          <td className="px-6 py-4">
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusClass(transaction.status)}`}>
+                              {statusLabel(transaction.status)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{formatDate(transaction.date)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
 
-          <Link
-            to="/payment"
-            className="bg-white rounded-2xl shadow p-6 hover:shadow-lg transition"
-          >
-            <div className="text-3xl mb-4">💰</div>
-
-            <h3 className="text-xl font-bold text-slate-800">
-              Make Payment
-            </h3>
-
-            <p className="text-gray-500 mt-2">
-              Make a secure payment using your card.
-            </p>
-          </Link>
-
-          <Link
-            to="/transactions"
-            className="bg-white rounded-2xl shadow p-6 hover:shadow-lg transition"
-          >
-            <div className="text-3xl mb-4">📜</div>
-
-            <h3 className="text-xl font-bold text-slate-800">
-              Transactions
-            </h3>
-
-            <p className="text-gray-500 mt-2">
-              View your payment history.
-            </p>
-          </Link>
-
-        </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+              <Link to="/cards" className="bg-white rounded-2xl shadow p-6 hover:shadow-lg transition">
+                <div className="text-3xl mb-4">💳</div><h3 className="text-xl font-bold">My Cards</h3>
+                <p className="text-gray-500 mt-2">Add and manage your saved cards.</p>
+              </Link>
+              <Link to="/payment" className="bg-white rounded-2xl shadow p-6 hover:shadow-lg transition">
+                <div className="text-3xl mb-4">💰</div><h3 className="text-xl font-bold">Make Payment</h3>
+                <p className="text-gray-500 mt-2">Make a secure payment using your card.</p>
+              </Link>
+              <Link to="/transactions" className="bg-white rounded-2xl shadow p-6 hover:shadow-lg transition">
+                <div className="text-3xl mb-4">📜</div><h3 className="text-xl font-bold">Transactions</h3>
+                <p className="text-gray-500 mt-2">View your complete payment history.</p>
+              </Link>
+            </div>
+          </>
+        ) : null}
       </main>
     </div>
   )
