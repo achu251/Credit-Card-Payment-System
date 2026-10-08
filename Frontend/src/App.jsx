@@ -15,78 +15,82 @@ import AdminTransactions from "./pages/AdminTransactions"
 import AdminLogs from "./pages/AdminLogs"
 
 
+import { ThemeProvider } from "./components/ThemeContext"
+
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <ThemeProvider>
+      <BrowserRouter>
+        <Routes>
 
-        <Route
-          path="/"
-          element={<Navigate to="/login" replace />}
-        />
+          <Route
+            path="/"
+            element={<Navigate to="/login" replace />}
+          />
 
-        <Route
-          path="/login"
-          element={<Login />}
-        />
+          <Route
+            path="/login"
+            element={<Login />}
+          />
 
-        <Route
-          path="/register"
-          element={<Register />}
-        />
+          <Route
+            path="/register"
+            element={<Register />}
+          />
 
-        <Route
-          path="/dashboard"
-          element={<Dashboard />}
-        />
+          <Route
+            path="/dashboard"
+            element={<Dashboard />}
+          />
 
-        <Route
-          path="/cards"
-          element={<Cards />}
-        />
+          <Route
+            path="/cards"
+            element={<Cards />}
+          />
 
-        <Route
-          path="/cards/add"
-          element={<AddCard />}
-        />
+          <Route
+            path="/cards/add"
+            element={<AddCard />}
+          />
 
-        <Route
-          path="/payment"
-          element={<Payment />}
-        />
+          <Route
+            path="/payment"
+            element={<Payment />}
+          />
 
-        <Route
-          path="/transactions"
-          element={<Transactions />}
-        />
+          <Route
+            path="/transactions"
+            element={<Transactions />}
+          />
 
-        <Route
-          path="/admin-dashboard"
-          element={<AdminDashboard />}
-        />
+          <Route
+            path="/admin-dashboard"
+            element={<AdminDashboard />}
+          />
 
-        <Route
-          path="/admin/users"
-          element={<AdminUsers />}
-        />
+          <Route
+            path="/admin/users"
+            element={<AdminUsers />}
+          />
 
-        <Route
-          path="/admin/cards"
-          element={<AdminCards />}
-        />
+          <Route
+            path="/admin/cards"
+            element={<AdminCards />}
+          />
 
-        <Route
-          path="/admin/transactions"
-          element={<AdminTransactions />}
-        />
+          <Route
+            path="/admin/transactions"
+            element={<AdminTransactions />}
+          />
 
-        <Route
-          path="/admin/logs"
-          element={<AdminLogs />}
-        />
+          <Route
+            path="/admin/logs"
+            element={<AdminLogs />}
+          />
 
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
 

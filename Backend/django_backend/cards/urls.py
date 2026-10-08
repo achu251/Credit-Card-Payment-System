@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import CardListCreateView, CardDeleteView
-from .admin_api import AdminCardsView
+from .admin_api import AdminCardsView, AdminCardUpdateView
 
 
 urlpatterns = [
@@ -12,5 +12,10 @@ urlpatterns = [
         "admin/all/",
         AdminCardsView.as_view(),
         name="admin-cards",
+    ),
+    path(
+        "admin/<int:card_id>/update/",
+        AdminCardUpdateView.as_view(),
+        name="admin-card-update",
     ),
 ]

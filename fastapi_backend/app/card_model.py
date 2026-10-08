@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Integer, String, ForeignKey
+from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Numeric, Boolean
 
 from app.database import Base
 
@@ -46,3 +46,15 @@ class Card(Base):
         DateTime,
         nullable=False
     )
+
+    is_blocked = Column(
+        Boolean,
+        default=False,
+        nullable=False
+    )
+
+    credit_limit = Column(
+        Numeric(10, 2),
+        nullable=False,
+        default=100000.00
+    )

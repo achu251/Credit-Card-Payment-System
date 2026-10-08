@@ -29,6 +29,8 @@ class Card(models.Model):
     expiry_year = models.PositiveSmallIntegerField()
 
     created_at = models.DateTimeField(auto_now_add=True)
+    is_blocked = models.BooleanField(default=False)
+    credit_limit = models.DecimalField(max_digits=12, decimal_places=2, default=100000.00)
 
     def __str__(self):
         return f"{self.card_type} ****{self.last_four}"

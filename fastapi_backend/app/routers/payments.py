@@ -49,6 +49,12 @@ def make_payment(
             detail="Card not found or does not belong to the current user.",
         )
 
+    if card.is_blocked:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Card is blocked.",
+        )
+
     # Check card expiry before processing payment.
     today = date.today()
 
@@ -63,6 +69,27 @@ def make_payment(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Card has expired.",
         )
+
+    # Enforce Credit Limit
+    from sqlalchemy import text
+    from decimal import Decimal
+    spent_query = text("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE card_id = :card_id AND status = 'SUCCESS'")
+    spent_amount = Decimal(str(db.execute(spent_query, {"card_id": card.id}).scalar() or 0))
+
+    if spent_amount + payment.amount > card.credit_limit:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Credit limit exceeded.",
+        )
+
+    # Email Triggers
+    if payment.amount > Decimal("5000"):
+        print(f"MOCK EMAIL: Alert! A transaction of INR {payment.amount} was initiated on card ****{card.last_four}.")
+
+    remaining_limit = card.credit_limit - (spent_amount + payment.amount)
+    if remaining_limit < (Decimal("0.10") * card.credit_limit):
+        print(f"MOCK EMAIL: Alert! Your available credit limit for card ****{card.last_four} has fallen below 10%.")
+
 
     # Generate a unique payment reference.
     reference = f"PAY-{uuid.uuid4().hex[:12].upper()}"

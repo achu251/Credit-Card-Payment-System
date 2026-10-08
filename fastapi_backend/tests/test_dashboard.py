@@ -1,4 +1,6 @@
 from datetime import datetime, timedelta
+
+import pytest
 from decimal import Decimal
 
 import jwt
@@ -44,8 +46,14 @@ def override_get_db():
         db.close()
 
 
-app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def use_dashboard_test_database():
+    app.dependency_overrides[get_db] = override_get_db
+    yield
+    app.dependency_overrides.pop(get_db, None)
 
 
 def create_token(user_id):
@@ -233,7 +241,7 @@ def test_dashboard_summary_returns_only_current_users_data():
     recent = data["last_5_transactions"]
 
     assert len(recent) == 5
-    assert recent[0]["amount"] == "100.00"
+    assert Decimal(str(recent[0]["amount"])) == Decimal("100.00")
     assert recent[0]["masked_card"] == "************1111"
     assert recent[0]["status"] == "SUCCESS"
 
